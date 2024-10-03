@@ -41,3 +41,27 @@ jobs:
     - name: Push Docker image to ECR
       run: |
         docker push 941377111679.dkr.ecr.ap-south-1.amazonaws.com/ecs-repo:latest
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Set up kubelogin for non-interactive login
+      uses: azure/use-kubelogin@v1
+      with:
+        kubelogin-version: 'v0.0.25'
+
+    - name: Get K8s context
+      uses: azure/aks-set-context@v3
+      with:
+        resource-group: MY_RESOURCE
+        cluster-name: MY_AKS_CLUSTER
+        admin: 'false'
+        use-kubelogin: 'true'
+
+    - name: Deploy to AKS
+      run: |
+        kubectl apply -f regapp-deploy.yml
+        kubectl apply -f regapp-service.yml
+        # kubectl rollout restart deployment/<your_deployment_name>
+
